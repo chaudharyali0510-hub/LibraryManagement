@@ -1,0 +1,121 @@
+﻿@model LibraryManagement.ViewModel.BookVM
+
+
+<form method="post">
+
+    <input asp-for="Book.Id" hidden />
+
+
+    <div class="mb-3">
+        <label asp-for="Book.Title"></label>
+        <input asp-for="Book.Title" class="form-control" />
+        <span asp-validation-for="Book.Title" class="text-danger"></span>
+    </div>
+
+
+    <div class="mb-3">
+        <label asp-for="Book.ISBN"></label>
+        <input asp-for="Book.ISBN" class="form-control" />
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Book.Description"></label>
+        <textarea asp-for="Book.Description" class="form-control" rows="3"></textarea>
+    </div>
+
+
+    <!-- Author -->
+    <div class="mb-3">
+
+        <label>Author</label>
+
+        <select asp-for="Book.AuthorId"
+                asp-items="@(new SelectList(Model.AuthorList, "Id", "FirstName", Model.Book.AuthorId))"
+                class="form-control select2">
+        </select>
+
+    </div>
+
+
+
+    <!-- Publisher -->
+    <div class="mb-3">
+
+        <label>Publisher</label>
+
+        <select asp-for="Book.PublisherId"
+                asp-items="@(new SelectList(Model.PublisherList, "Id", "Name", Model.Book.PublisherId))"
+                class="form-control select2">
+        </select>
+
+    </div>
+
+
+
+    <!-- Genres -->
+    <div class="mb-3">
+        <label>Genres</label>
+
+        <div class="d-flex flex-wrap gap-3">
+            @foreach (var genre in Model.GenreList)
+            {
+                <div class="form-check">
+                    <input class="form-check-input"
+                           type="checkbox"
+                           name="SelectedGenreIds"
+                           value="@genre.Id"
+                    @(Model.SelectedGenreIds.Contains(genre.Id) ? "checked" : "") />
+
+                    <label class="form-check-label">
+                        @genre.Name
+                    </label>
+                </div>
+            }
+        </div>
+    </div>
+
+
+
+    <div class="mb-3">
+        <label asp-for="Book.PublicationYear"></label>
+        <input asp-for="Book.PublicationYear"
+               class="form-control" />
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Book.Edition"></label>
+        <input asp-for="Book.Edition" class="form-control" />
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Book.Language"></label>
+        <input asp-for="Book.Language" class="form-control" />
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Book.TotalCopies"></label>
+        <input asp-for="Book.TotalCopies"
+               class="form-control" />
+    </div>
+
+
+    <button type="submit" class="btn btn-success">
+        Save
+    </button>
+
+
+    <a asp-action="Index" class="btn btn-secondary">
+        Back
+    </a>
+
+</form>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            $('.select2').select2({
+                width: '100%'
+            });
+        });
+    </script>
+}

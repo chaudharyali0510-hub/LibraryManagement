@@ -1,0 +1,206 @@
+﻿@model LibraryManagement.ViewModel.BookVM
+
+<div class="container">
+
+    <div class="row mb-3">
+        <div class="col-6">
+            <h2>Books</h2>
+        </div>
+
+        <div class="col-6 text-end">
+            <a asp-action="Upsert" class="btn btn-primary">
+                Add New Book
+            </a>
+        </div>
+    </div>
+
+
+    <table class="table table-bordered table-striped">
+
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th>ISBN</th>
+                <th>Author</th>
+                <th>Publisher</th>
+                <th>Genres</th>
+                <th>Copies</th>
+                <th>Available</th>
+                <th></th>
+            </tr>
+        </thead>
+
+
+        <tbody>
+
+            @foreach (var book in Model.Books)
+            {
+                <tr>
+
+                    <td>
+                        @book.Title
+                    </td>
+
+
+                    <td>
+                        @book.ISBN
+                    </td>
+
+
+                    <td>
+                        @book.Author?.FirstName
+                        @book.Author?.LastName
+                    </td>
+
+
+                    <td>
+                        @book.Publisher?.Name
+                    </td>
+
+
+                    <td>
+                        @foreach (var genre in book.BookGenres)
+                        {
+                            <span class="badge bg-secondary">
+                                @genre.Genre?.Name
+                            </span>
+                        }
+                    </td>
+
+
+                    <td>
+                        @book.TotalCopies
+                    </td>
+
+
+                    <td>
+                        @book.AvailableCopies
+                    </td>
+
+
+                    <td>
+
+                        <a asp-action="Upsert"
+                           asp-route-id="@book.Id"
+                           class="btn btn-warning btn-sm">
+                            Edit
+                        </a>
+
+
+                        <a asp-action="Delete"
+                           asp-route-id="@book.Id"
+                           class="btn btn-danger btn-sm">
+                            Delete
+                        </a>
+                        <button class="btn btn-success btn-sm"
+                                data-bs-toggle="modal"
+                                data-bs-target="#issueModal-@book.Id">
+                            Issue Book
+                        </button>
+                    </td>
+
+                </tr>
+                <div class="modal fade" id="issueModal-@book.Id" tabindex="-1">
+
+                    <div class="modal-dialog">
+
+                        <div class="modal-content">
+
+                            <div class="modal-header">
+
+                                <h5 class="modal-title">
+                                    @book.Title - Issue Details
+                                </h5>
+
+                                <button type="button"
+                                        class="btn-close"
+                                        data-bs-dismiss="modal">
+                                </button>
+
+                            </div>
+
+
+                            <div class="modal-body">
+
+                                <h6>Currently Issued To:</h6>
+
+
+                                @{
+                                    var activeIssues = book.BookIssues
+                                        .Where(x => !x.isReturned)
+                                        .ToList();
+                                }
+
+
+                                @if (activeIssues.Any())
+                                {
+                                    <div style="max-height: 260px; overflow-y: auto;">
+                                        <ul class="list-group">
+
+                                        @foreach (var issue in activeIssues)
+                                        {
+                                            <li class="list-group-item">
+
+                                                @issue.Member?.FirstName @issue.Member?.LastName
+
+                                                <span class="badge bg-warning float-end ms-2">
+                                                    Due:
+                                                    @issue.DueDate.ToShortDateString()
+                                                </span>
+
+                                                <span class="badge bg-info float-end">
+                                                    Issued:
+                                                    @issue.DateIssue.ToShortDateString()
+                                                </span>
+
+                                            </li>
+                                        }
+
+                                     </ul>
+                                   </div>
+                                }
+                                else
+                                {
+                                    <p class="text-muted">
+                                        No one has this book currently.
+                                    </p>
+                                }
+
+                            </div>
+
+
+                            <div class="modal-footer">
+
+                                <a asp-controller="BookIssue"
+                                   asp-action="Upsert"
+                                   asp-route-bookId="@book.Id"
+                                   class="btn btn-success">
+
+                                    Issue Book
+
+                                </a>
+
+
+                                <button type="button"
+                                        class="btn btn-secondary"
+                                        data-bs-dismiss="modal">
+
+                                    Close
+
+                                </button>
+
+                            </div>
+
+
+                        </div>
+
+                    </div>
+
+                </div>
+            }
+
+        </tbody>
+
+    </table>
+
+</div>

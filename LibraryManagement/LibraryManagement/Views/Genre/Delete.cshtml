@@ -1,0 +1,25 @@
+﻿@model Genre
+
+
+<form method="post">
+
+    <input asp-for="Id" hidden />
+
+
+    <h3>
+        Are you sure you want to delete
+        @Model.Name?
+    </h3>
+
+
+    <button class="btn btn-danger">
+        Delete
+    </button>
+
+
+    <a asp-action="Index" class="btn btn-secondary">
+        Cancel
+    </a>
+
+
+</form>

@@ -1,0 +1,120 @@
+﻿@model IEnumerable<LibraryManagement.Models.BookIssue>
+<div class="container">
+
+    <div class="row mb-3">
+
+        <div class="col-6">
+            <h2>Book Issues</h2>
+        </div>
+
+        <div class="col-6 text-end">
+            <a asp-action="Upsert" class="btn btn-primary">
+                Issue Book
+            </a>
+        </div>
+
+    </div>
+
+
+    <table class="table table-bordered table-striped">
+
+        <thead>
+            <tr>
+                <th>Book</th>
+                <th>Member</th>
+                <th>Issue Date</th>
+                <th>Due Date</th>
+                <th>Return Date</th>
+                <th>Fine</th>
+                <th>Status</th>
+                <th></th>
+            </tr>
+        </thead>
+
+
+        <tbody>
+
+            @foreach (var item in Model)
+            {
+                <tr>
+
+                    <td>
+                        @item.Book.Title
+                    </td>
+
+
+                    <td>
+                        @item.Member.FirstName
+                        @item.Member.LastName
+                    </td>
+
+
+                    <td>
+                        @item.DateIssue.ToShortDateString()
+                    </td>
+
+
+                    <td>
+                        @item.DueDate.ToShortDateString()
+                    </td>
+
+
+                    <td>
+                        @(item.ReturnDate.HasValue
+                        ? item.ReturnDate.Value.ToShortDateString()
+                        : "Not Returned")
+                    </td>
+
+
+                    <td>
+                        @item.FineAmount
+                    </td>
+
+
+                    <td>
+
+                        @if (item.isReturned)
+                        {
+                            <span class="badge bg-success">
+                                Returned
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-warning">
+                                Issued
+                            </span>
+                        }
+
+                    </td>
+
+
+                    <td>
+
+                        @if (!item.isReturned)
+                        {
+                            <form asp-action="ReturnBook" asp-route-id="@item.Id" method="post" style="display:inline">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="btn btn-success btn-sm">Return</button>
+                            </form>
+                        }
+
+
+                        <a asp-action="Delete"
+                           asp-route-id="@item.Id"
+                           class="btn btn-danger btn-sm">
+                            Delete
+                        </a>
+                       
+
+                    </td>
+
+                </tr>
+            }
+
+
+        </tbody>
+
+    </table>
+
+</div>

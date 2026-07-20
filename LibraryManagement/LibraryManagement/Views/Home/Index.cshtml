@@ -1,8 +1,205 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+﻿@model DashboardVM
+
+@{
+    ViewData["Title"] = "Dashboard";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="row g-3 mb-4">
+    <div class="col-xl-3 col-md-6">
+        <a asp-controller="Book" asp-action="Index" class="text-decoration-none">
+            <div class="dash-card dash-card-primary">
+                <div class="dash-card-icon"><i class="fas fa-book"></i></div>
+                <div class="dash-card-body">
+                    <span class="dash-card-label">Total Books</span>
+                    <span class="dash-card-value">@Model.TotalBooks</span>
+                    <span class="dash-card-sub">@Model.AvailableBooks copies available</span>
+                </div>
+            </div>
+        </a>
+    </div>
+    <div class="col-xl-3 col-md-6">
+        <a asp-controller="BookIssue" asp-action="Index" class="text-decoration-none">
+            <div class="dash-card dash-card-warning">
+                <div class="dash-card-icon"><i class="fas fa-exchange-alt"></i></div>
+                <div class="dash-card-body">
+                    <span class="dash-card-label">Issued Books</span>
+                    <span class="dash-card-value">@Model.IssuedBooks</span>
+                    <span class="dash-card-sub">@Model.OverdueBooks overdue</span>
+                </div>
+            </div>
+        </a>
+    </div>
+    <div class="col-xl-3 col-md-6">
+        <a asp-controller="Member" asp-action="Index" class="text-decoration-none">
+            <div class="dash-card dash-card-success">
+                <div class="dash-card-icon"><i class="fas fa-users"></i></div>
+                <div class="dash-card-body">
+                    <span class="dash-card-label">Members</span>
+                    <span class="dash-card-value">@Model.TotalMembers</span>
+                    <span class="dash-card-sub">@Model.ActiveMembers active</span>
+                </div>
+            </div>
+        </a>
+    </div>
+    <div class="col-xl-3 col-md-6">
+        <div class="dash-card dash-card-danger">
+            <div class="dash-card-icon"><i class="fas fa-dollar-sign"></i></div>
+            <div class="dash-card-body">
+                <span class="dash-card-label">Total Fines</span>
+                <span class="dash-card-value">$@Model.TotalFines.ToString("N2")</span>
+                <span class="dash-card-sub">collected from overdue</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-xl-3 col-md-6">
+        <a asp-controller="Author" asp-action="Index" class="text-decoration-none">
+            <div class="dash-card-mini">
+                <i class="fas fa-pen-fancy"></i>
+                <div>
+                    <span class="dash-mini-value">@Model.TotalAuthors</span>
+                    <span class="dash-mini-label">Authors</span>
+                </div>
+            </div>
+        </a>
+    </div>
+    <div class="col-xl-3 col-md-6">
+        <a asp-controller="Publisher" asp-action="Index" class="text-decoration-none">
+            <div class="dash-card-mini">
+                <i class="fas fa-building"></i>
+                <div>
+                    <span class="dash-mini-value">@Model.TotalPublishers</span>
+                    <span class="dash-mini-label">Publishers</span>
+                </div>
+            </div>
+        </a>
+    </div>
+    <div class="col-xl-3 col-md-6">
+        <a asp-controller="Genre" asp-action="Index" class="text-decoration-none">
+            <div class="dash-card-mini">
+                <i class="fas fa-tags"></i>
+                <div>
+                    <span class="dash-mini-value">@Model.TotalGenres</span>
+                    <span class="dash-mini-label">Genres</span>
+                </div>
+            </div>
+        </a>
+    </div>
+    <div class="col-xl-3 col-md-6">
+        <a asp-controller="BookIssue" asp-action="Index" class="text-decoration-none">
+            <div class="dash-card-mini">
+                <i class="fas fa-undo"></i>
+                <div>
+                    <span class="dash-mini-value">@Model.AvailableBooks</span>
+                    <span class="dash-mini-label">Available Copies</span>
+                </div>
+            </div>
+        </a>
+    </div>
+</div>
+
+<div class="row g-3">
+    <div class="col-lg-7">
+        <div class="card">
+            <div class="card-header d-flex align-items-center justify-content-between py-3">
+                <h6 class="mb-0 fw-semibold">Recent Issues</h6>
+                <a asp-controller="BookIssue" asp-action="Index" class="btn btn-sm btn-outline-primary">View All</a>
+            </div>
+            <div class="card-body p-0">
+                @if (Model.RecentIssues.Any())
+                {
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Book</th>
+                                    <th>Member</th>
+                                    <th>Issued</th>
+                                    <th>Due</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var issue in Model.RecentIssues)
+                                {
+                                    <tr>
+                                        <td class="fw-medium">@(issue.Book?.Title ?? "N/A")</td>
+                                        <td>@(issue.Member != null ? $"{issue.Member.FirstName} {issue.Member.LastName}" : "N/A")</td>
+                                        <td>@issue.DateIssue.ToString("MMM dd, yyyy")</td>
+                                        <td>@issue.DueDate.ToString("MMM dd, yyyy")</td>
+                                        <td>
+                                            @if (issue.isReturned)
+                                            {
+                                                <span class="badge bg-success">Returned</span>
+                                            }
+                                            else if (issue.DueDate < DateTime.Now)
+                                            {
+                                                <span class="badge bg-danger">Overdue</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-primary">Active</span>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <div class="text-center py-5 text-muted">
+                        <i class="fas fa-inbox fa-2x mb-3 d-block"></i>
+                        <p>No recent issues found.</p>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-5">
+        <div class="card">
+            <div class="card-header d-flex align-items-center justify-content-between py-3">
+                <h6 class="mb-0 fw-semibold">Overdue Books</h6>
+                <span class="badge bg-danger">@Model.OverdueBooks</span>
+            </div>
+            <div class="card-body p-0">
+                @if (Model.OverdueList.Any())
+                {
+                    <div class="list-group list-group-flush">
+                        @foreach (var issue in Model.OverdueList)
+                        {
+                            var daysOverdue = (DateTime.Now - issue.DueDate).Days;
+                            <div class="list-group-item d-flex justify-content-between align-items-center px-3 py-3">
+                                <div>
+                                    <div class="fw-medium">@(issue.Book?.Title ?? "N/A")</div>
+                                    <small class="text-muted">
+                                        @(issue.Member != null ? $"{issue.Member.FirstName} {issue.Member.LastName}" : "N/A")
+                                        &middot; Due @issue.DueDate.ToString("MMM dd")
+                                    </small>
+                                </div>
+                                <div class="text-end">
+                                    <span class="badge bg-danger-subtle text-danger">@daysOverdue days late</span>
+                                    @if (issue.FineAmount > 0)
+                                    {
+                                        <div><small class="text-muted">$@issue.FineAmount.ToString("N2")</small></div>
+                                    }
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="text-center py-5 text-muted">
+                        <i class="fas fa-check-circle fa-2x mb-3 d-block text-success"></i>
+                        <p>No overdue books. All clear!</p>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
 </div>
