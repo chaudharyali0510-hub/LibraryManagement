@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace LibraryManagement.Controllers
 {
-    [Authorize(Roles = "Admin")]
+    [Authorize(Policy = "Roles.View")]
     public class RoleController : Controller
     {
         private readonly RoleManager<ApplicationRole> _roleManager;

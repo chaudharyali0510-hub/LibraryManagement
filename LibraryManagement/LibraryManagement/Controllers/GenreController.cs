@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace LibraryManagement.Controllers
 {
-    [Authorize]
+    [Authorize(Policy = "Genres.View")]
     public class GenreController : Controller
     {
         private readonly IUnitofWork _unitofWork;
@@ -20,9 +20,11 @@ namespace LibraryManagement.Controllers
             List<Genre> obj = _unitofWork.Genre.GetAll().ToList();
             return View(obj);
         }
+
+        [Authorize(Policy = "Genres.Create")]
         public IActionResult Upsert(int? id)
         {
-            if(id== null || id == 0)
+            if (id == null || id == 0)
             {
                 return View();
             }
@@ -33,7 +35,10 @@ namespace LibraryManagement.Controllers
                 return View(genre);
             }
         }
+
+        [Authorize(Policy = "Genres.Edit")]
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public IActionResult Upsert(Genre genre)
         {
             if (!ModelState.IsValid)
@@ -55,16 +60,20 @@ namespace LibraryManagement.Controllers
                 return RedirectToAction("Index");
             }
         }
+
+        [Authorize(Policy = "Genres.Delete")]
         public IActionResult Delete(int id)
         {
             return View(_unitofWork.Genre.Get(c => c.Id == id));
         }
-        
-        [HttpPost,ActionName("Delete")]
+
+        [Authorize(Policy = "Genres.Delete")]
+        [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
         public IActionResult DeletePost(int id)
         {
             var genre = _unitofWork.Genre.Get(c => c.Id == id);
-            if(genre == null) { return NotFound(); }
+            if (genre == null) { return NotFound(); }
             _unitofWork.Genre.Remove(genre);
             _unitofWork.Save();
             return RedirectToAction("Index");

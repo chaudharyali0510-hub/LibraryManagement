@@ -1,4 +1,5 @@
-﻿@model LibraryManagement.ViewModel.BookVM
+﻿@inject IAuthorizationService AuthorizationService
+@model LibraryManagement.ViewModel.BookVM
 
 <div class="container">
 
@@ -8,9 +9,12 @@
         </div>
 
         <div class="col-6 text-end">
-            <a asp-action="Upsert" class="btn btn-primary">
-                Add New Book
-            </a>
+            @if ((await AuthorizationService.AuthorizeAsync(User, "Books.Create")).Succeeded)
+            {
+                <a asp-action="Upsert" class="btn btn-primary">
+                    Add New Book
+                </a>
+            }
         </div>
     </div>
 
@@ -77,28 +81,34 @@
                         @book.AvailableCopies
                     </td>
 
-
                     <td>
+                        @if ((await AuthorizationService.AuthorizeAsync(User, "Books.Edit")).Succeeded)
+                        {
+                            <a asp-action="Upsert"
+                               asp-route-id="@book.Id"
+                               class="btn btn-warning btn-sm">
+                                Edit
+                            </a>
+                        }
 
-                        <a asp-action="Upsert"
-                           asp-route-id="@book.Id"
-                           class="btn btn-warning btn-sm">
-                            Edit
-                        </a>
+                        @if ((await AuthorizationService.AuthorizeAsync(User, "Books.Delete")).Succeeded)
+                        {
+                            <a asp-action="Delete"
+                               asp-route-id="@book.Id"
+                               class="btn btn-danger btn-sm">
+                                Delete
+                            </a>
+                        }
 
-
-                        <a asp-action="Delete"
-                           asp-route-id="@book.Id"
-                           class="btn btn-danger btn-sm">
-                            Delete
-                        </a>
-                        <button class="btn btn-success btn-sm"
-                                data-bs-toggle="modal"
-                                data-bs-target="#issueModal-@book.Id">
-                            Issue Book
-                        </button>
+                        @if ((await AuthorizationService.AuthorizeAsync(User, "Issues.Create")).Succeeded)
+                        {
+                            <button class="btn btn-success btn-sm"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#issueModal-@book.Id">
+                                Issue Book
+                            </button>
+                        }
                     </td>
-
                 </tr>
                 <div class="modal fade" id="issueModal-@book.Id" tabindex="-1">
 
@@ -171,14 +181,17 @@
 
                             <div class="modal-footer">
 
-                                <a asp-controller="BookIssue"
-                                   asp-action="Upsert"
-                                   asp-route-bookId="@book.Id"
-                                   class="btn btn-success">
+                                @if ((await AuthorizationService.AuthorizeAsync(User, "Issues.Create")).Succeeded)
+                                {
+                                    <a asp-controller="BookIssue"
+                                       asp-action="Upsert"
+                                       asp-route-bookId="@book.Id"
+                                       class="btn btn-success">
 
-                                    Issue Book
+                                        Issue Book
 
-                                </a>
+                                    </a>
+                                }
 
 
                                 <button type="button"

@@ -15,18 +15,14 @@ namespace LibraryManagement.Services
 
         public async Task<List<MenuItem>> GetUserMenusAsync(string userId)
         {
-            var menus = await _context.UserRoles
-                .Where(ur => ur.UserId == userId)
-                .Join(
-                    _context.RoleMenuItems,
-                    ur => ur.RoleId,
-                    rm => rm.RoleId,
-                    (ur, rm) => rm.MenuItem
-                )
-                .Where(m => m.IsVisible)
-                .OrderBy(m => m.SortOrder)
-                .Distinct()
-                .ToListAsync();
+            var menus = await (
+                from ur in _context.UserRoles
+                join rm in _context.RoleMenuItems on ur.RoleId equals rm.RoleId
+                join m in _context.MenuItems on rm.MenuItemId equals m.Id
+                where ur.UserId == userId && m.IsVisible
+                orderby m.SortOrder
+                select m
+            ).Distinct().ToListAsync();
 
             return menus;
         }

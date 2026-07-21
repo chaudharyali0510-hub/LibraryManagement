@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace LibraryManagement.Controllers
 {
-    [Authorize]
+    [Authorize(Policy = "Authors.View")]
     public class AuthorController : Controller
     {
         private readonly IUnitofWork _unitofWork;
@@ -20,6 +20,8 @@ namespace LibraryManagement.Controllers
             List<Author> obj = _unitofWork.Author.GetAll().ToList();
             return View(obj);
         }
+
+        [Authorize(Policy = "Authors.Create")]
         public IActionResult Upsert(int? id)
         {
             if (id == null || id == 0)
@@ -33,7 +35,10 @@ namespace LibraryManagement.Controllers
                 return View(author);
             }
         }
+
+        [Authorize(Policy = "Authors.Edit")]
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public IActionResult Upsert(Author author)
         {
             if (!ModelState.IsValid)
@@ -55,12 +60,16 @@ namespace LibraryManagement.Controllers
                 return RedirectToAction("Index");
             }
         }
+
+        [Authorize(Policy = "Authors.Delete")]
         public IActionResult Delete(int id)
         {
             return View(_unitofWork.Author.Get(c => c.Id == id));
         }
 
+        [Authorize(Policy = "Authors.Delete")]
         [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
         public IActionResult DeletePost(int id)
         {
             var author = _unitofWork.Author.Get(c => c.Id == id);
@@ -71,4 +80,3 @@ namespace LibraryManagement.Controllers
         }
     }
 }
-

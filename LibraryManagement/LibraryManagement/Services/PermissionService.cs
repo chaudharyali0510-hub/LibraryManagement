@@ -14,23 +14,23 @@ namespace LibraryManagement.Services
 
         public async Task<List<string>> GetUserPermissionsAsync(string userId)
         {
-            var rolePermissions = await _context.UserRoles
-                .Where(ur => ur.UserId == userId)
-                .Join(
-                    _context.RolePermissions,
-                    ur => ur.RoleId,
-                    rp => rp.RoleId,
-                    (ur, rp) => rp.Permission.Name
-                )
-                .ToListAsync();
+            var rolePermissions = await (
+                from ur in _context.UserRoles
+                join rp in _context.RolePermissions on ur.RoleId equals rp.RoleId
+                join p in _context.Permissions on rp.PermissionId equals p.Id
+                where ur.UserId == userId
+                select p.Name
+            ).ToListAsync();
 
-            var userPermissions = await _context.UserPermissions
-                .Where(up => up.UserId == userId)
-                .Select(up => up.Permission.Name)
-                .ToListAsync();
+            var userPermissions = await (
+                from up in _context.UserPermissions
+                join p in _context.Permissions on up.PermissionId equals p.Id
+                where up.UserId == userId
+                select p.Name
+            ).ToListAsync();
 
             return rolePermissions.Concat(userPermissions)
-                .Distinct()
+                .Distinct(StringComparer.OrdinalIgnoreCase)
                 .ToList();
         }
 
@@ -38,8 +38,25 @@ namespace LibraryManagement.Services
             string userId,
             string permission)
         {
-            var permissions = await GetUserPermissionsAsync(userId);
-            return permissions.Contains(permission);
+            var hasRolePermission = await (
+                from ur in _context.UserRoles
+                join rp in _context.RolePermissions on ur.RoleId equals rp.RoleId
+                join p in _context.Permissions on rp.PermissionId equals p.Id
+                where ur.UserId == userId && p.Name == permission
+                select p.Id
+            ).AnyAsync();
+
+            if (hasRolePermission)
+                return true;
+
+            var hasUserPermission = await (
+                from up in _context.UserPermissions
+                join p in _context.Permissions on up.PermissionId equals p.Id
+                where up.UserId == userId && p.Name == permission
+                select p.Id
+            ).AnyAsync();
+
+            return hasUserPermission;
         }
     }
 }

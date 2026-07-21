@@ -7,7 +7,7 @@ using System.Diagnostics;
 
 namespace LibraryManagement.Controllers
 {
-    [Authorize]
+    [Authorize(Policy = "Dashboard.View")]
     public class HomeController : Controller
     {
         private readonly IUnitofWork _unitOfWork;

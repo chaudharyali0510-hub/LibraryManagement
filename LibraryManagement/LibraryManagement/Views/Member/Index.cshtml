@@ -1,12 +1,16 @@
-﻿@model IEnumerable<Member>
+﻿@inject IAuthorizationService AuthorizationService
+@model IEnumerable<Member>
 
 <div class="container">
 
     <h2>Members</h2>
 
-    <a asp-action="Upsert" class="btn btn-primary">
-        Add Member
-    </a>
+    @if ((await AuthorizationService.AuthorizeAsync(User, "Members.Create")).Succeeded)
+    {
+        <a asp-action="Upsert" class="btn btn-primary">
+            Add Member
+        </a>
+    }
 
     <table class="table table-bordered">
         <thead>
@@ -36,17 +40,23 @@
                     </td>
 
                     <td>
-                        <a asp-action="Upsert"
-                           asp-route-id="@item.Id"
-                           class="btn btn-warning">
-                            Edit
-                        </a>
+                        @if ((await AuthorizationService.AuthorizeAsync(User, "Members.Edit")).Succeeded)
+                        {
+                            <a asp-action="Upsert"
+                               asp-route-id="@item.Id"
+                               class="btn btn-warning">
+                                Edit
+                            </a>
+                        }
 
-                        <a asp-action="Delete"
-                           asp-route-id="@item.Id"
-                           class="btn btn-danger">
-                            Delete
-                        </a>
+                        @if ((await AuthorizationService.AuthorizeAsync(User, "Members.Delete")).Succeeded)
+                        {
+                            <a asp-action="Delete"
+                               asp-route-id="@item.Id"
+                               class="btn btn-danger">
+                                Delete
+                            </a>
+                        }
                     </td>
                 </tr>
             }

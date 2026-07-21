@@ -1,4 +1,5 @@
-﻿@model IEnumerable<LibraryManagement.Models.BookIssue>
+﻿@inject IAuthorizationService AuthorizationService
+@model IEnumerable<LibraryManagement.Models.BookIssue>
 <div class="container">
 
     <div class="row mb-3">
@@ -8,9 +9,12 @@
         </div>
 
         <div class="col-6 text-end">
-            <a asp-action="Upsert" class="btn btn-primary">
-                Issue Book
-            </a>
+            @if ((await AuthorizationService.AuthorizeAsync(User, "Issues.Create")).Succeeded)
+            {
+                <a asp-action="Upsert" class="btn btn-primary">
+                    Issue Book
+                </a>
+            }
         </div>
 
     </div>
@@ -91,7 +95,7 @@
 
                     <td>
 
-                        @if (!item.isReturned)
+                        @if (!item.isReturned && (await AuthorizationService.AuthorizeAsync(User, "Issues.Return")).Succeeded)
                         {
                             <form asp-action="ReturnBook" asp-route-id="@item.Id" method="post" style="display:inline">
                                 @Html.AntiForgeryToken()
@@ -99,13 +103,14 @@
                             </form>
                         }
 
-
-                        <a asp-action="Delete"
-                           asp-route-id="@item.Id"
-                           class="btn btn-danger btn-sm">
-                            Delete
-                        </a>
-                       
+                        @if ((await AuthorizationService.AuthorizeAsync(User, "Issues.Delete")).Succeeded)
+                        {
+                            <a asp-action="Delete"
+                               asp-route-id="@item.Id"
+                               class="btn btn-danger btn-sm">
+                                Delete
+                            </a>
+                        }
 
                     </td>
 

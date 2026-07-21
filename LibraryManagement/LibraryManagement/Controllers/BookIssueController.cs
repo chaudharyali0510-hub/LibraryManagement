@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace LibraryManagement.Controllers
 {
-    [Authorize]
+    [Authorize(Policy = "Issues.View")]
     public class BookIssueController : Controller
     {
         private readonly IUnitofWork _unitOfWork;
@@ -36,7 +36,6 @@ namespace LibraryManagement.Controllers
                     Value = b.Id.ToString()
                 });
 
-
             ViewBag.Members = _unitOfWork.Member
                 .GetAll()
                 .Select(m => new SelectListItem
@@ -46,10 +45,10 @@ namespace LibraryManagement.Controllers
                 });
         }
 
+        [Authorize(Policy = "Issues.Create")]
         public IActionResult Upsert(int? id, int? bookId)
         {
             PopulateDropdowns();
-
 
             if (bookId != null)
             {
@@ -61,7 +60,6 @@ namespace LibraryManagement.Controllers
                 });
             }
 
-
             if (id == null || id == 0)
             {
                 return View(new BookIssue
@@ -71,12 +69,10 @@ namespace LibraryManagement.Controllers
                 });
             }
 
-
             var issue = _unitOfWork.BookIssue.Get(
                 x => x.Id == id,
                 includeProperties: "Book,Member"
             );
-
 
             if (issue == null)
             {
@@ -88,6 +84,7 @@ namespace LibraryManagement.Controllers
             return View(issue);
         }
 
+        [Authorize(Policy = "Issues.Create")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult Upsert(BookIssue issue)
@@ -98,20 +95,16 @@ namespace LibraryManagement.Controllers
                 return View(issue);
             }
 
-
-
             if (issue.Id == 0)
             {
                 var book = _unitOfWork.Book.Get(
                     b => b.Id == issue.BookId
                 );
 
-
                 if (book == null)
                 {
                     return NotFound();
                 }
-
 
                 if (book.AvailableCopies <= 0)
                 {
@@ -125,16 +118,11 @@ namespace LibraryManagement.Controllers
                     return View(issue);
                 }
 
-
-
                 book.AvailableCopies--;
-
 
                 _unitOfWork.Book.Update(book);
 
-
                 issue.isReturned = false;
-
 
                 _unitOfWork.BookIssue.Add(issue);
             }
@@ -143,19 +131,12 @@ namespace LibraryManagement.Controllers
                 _unitOfWork.BookIssue.Update(issue);
             }
 
-
-
             _unitOfWork.Save();
-
 
             return RedirectToAction(nameof(Index));
         }
 
-
-
-
-
-        // Return Book
+        [Authorize(Policy = "Issues.Return")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult ReturnBook(int id)
@@ -165,13 +146,10 @@ namespace LibraryManagement.Controllers
                 includeProperties: "Book"
             );
 
-
             if (issue == null)
             {
                 return NotFound();
             }
-
-
 
             if (issue.isReturned)
             {
@@ -180,45 +158,30 @@ namespace LibraryManagement.Controllers
                 );
             }
 
-
-
             issue.ReturnDate = DateTime.Now;
 
             issue.isReturned = true;
-
-
 
             if (issue.ReturnDate > issue.DueDate)
             {
                 int daysLate =
                     (issue.ReturnDate.Value - issue.DueDate).Days;
 
-
                 issue.FineAmount = daysLate * 2;
             }
 
-
-
             issue.Book.AvailableCopies++;
-
 
             _unitOfWork.Book.Update(issue.Book);
 
             _unitOfWork.BookIssue.Update(issue);
 
-
             _unitOfWork.Save();
-
-
 
             return RedirectToAction(nameof(Index));
         }
 
-
-
-
-
-        // Delete confirmation page
+        [Authorize(Policy = "Issues.Delete")]
         public IActionResult Delete(int id)
         {
             var issue = _unitOfWork.BookIssue.Get(
@@ -226,20 +189,15 @@ namespace LibraryManagement.Controllers
                 includeProperties: "Book,Member"
             );
 
-
             if (issue == null)
             {
                 return NotFound();
             }
 
-
             return View(issue);
         }
 
-
-
-
-        // Delete Issue
+        [Authorize(Policy = "Issues.Delete")]
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public IActionResult DeletePost(int id)
@@ -248,21 +206,16 @@ namespace LibraryManagement.Controllers
                 x => x.Id == id
             );
 
-
             if (issue == null)
             {
                 return NotFound();
             }
 
-
-
-            // Restore book copies if not returned
             if (!issue.isReturned)
             {
                 var book = _unitOfWork.Book.Get(
                     b => b.Id == issue.BookId
                 );
-
 
                 if (book != null)
                 {
@@ -272,14 +225,9 @@ namespace LibraryManagement.Controllers
                 }
             }
 
-
-
             _unitOfWork.BookIssue.Remove(issue);
 
-
             _unitOfWork.Save();
-
-
 
             return RedirectToAction(nameof(Index));
         }

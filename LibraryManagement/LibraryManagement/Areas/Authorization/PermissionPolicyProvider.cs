@@ -12,15 +12,11 @@ namespace LibraryManagement.Areas.Authorization
             _fallbackPolicyProvider = new DefaultAuthorizationPolicyProvider(options);
         }
 
-        public async Task<AuthorizationPolicy?> GetPolicyAsync(string policyName)
+        public Task<AuthorizationPolicy?> GetPolicyAsync(string policyName)
         {
-            var existingPolicy = await _fallbackPolicyProvider.GetPolicyAsync(policyName);
-            if (existingPolicy != null)
-                return existingPolicy;
-
             var policy = new AuthorizationPolicyBuilder();
             policy.AddRequirements(new PermissionRequirement(policyName));
-            return policy.Build();
+            return Task.FromResult<AuthorizationPolicy?>(policy.Build());
         }
 
         public Task<AuthorizationPolicy> GetDefaultPolicyAsync()

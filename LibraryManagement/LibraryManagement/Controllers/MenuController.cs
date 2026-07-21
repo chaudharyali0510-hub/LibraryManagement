@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace LibraryManagement.Controllers
 {
-    [Authorize(Roles = "Admin")]
+    [Authorize(Policy = "Menus.View")]
     public class MenuController : Controller
     {
         private readonly ApplicationDbContext _context;
