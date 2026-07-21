@@ -1,0 +1,43 @@
+@model LibraryManagement.Models.Identity.MenuItem
+
+<div class="container">
+    <h2>@(Model.Id == 0 ? "Add Menu Item" : "Edit Menu Item")</h2>
+
+    <form method="post">
+        <input asp-for="Id" hidden />
+
+        <div class="mb-3">
+            <label asp-for="Name" class="form-label"></label>
+            <input asp-for="Name" class="form-control" />
+            <span asp-validation-for="Name" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Controller" class="form-label"></label>
+            <input asp-for="Controller" class="form-control" />
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Action" class="form-label"></label>
+            <input asp-for="Action" class="form-control" />
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="IconClass" class="form-label"></label>
+            <input asp-for="IconClass" class="form-control" placeholder="fas fa-book" />
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="SortOrder" class="form-label"></label>
+            <input asp-for="SortOrder" class="form-control" type="number" />
+        </div>
+
+        <div class="mb-3 form-check">
+            <input asp-for="IsVisible" class="form-check-input" />
+            <label asp-for="IsVisible" class="form-check-label">Visible</label>
+        </div>
+
+        <button type="submit" class="btn btn-success">Save</button>
+        <a asp-action="Index" class="btn btn-secondary">Back</a>
+    </form>
+</div>

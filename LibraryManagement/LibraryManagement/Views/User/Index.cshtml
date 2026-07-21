@@ -1,0 +1,27 @@
+@model IEnumerable<LibraryManagement.Models.Identity.ApplicationUser>
+
+<div class="container">
+    <h2>User Management</h2>
+
+    <table class="table table-bordered mt-3">
+        <thead>
+            <tr>
+                <th>Email</th>
+                <th>Full Name</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var user in Model)
+            {
+                <tr>
+                    <td>@user.Email</td>
+                    <td>@user.FullName</td>
+                    <td>
+                        <a asp-action="Manage" asp-route-userId="@user.Id" class="btn btn-warning">Manage</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

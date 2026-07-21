@@ -1,10 +1,12 @@
 ﻿using LibraryManagement.Models;
 using LibraryManagement.Repository.IRepository;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace LibraryManagement.Controllers
 {
+    [Authorize]
     public class BookIssueController : Controller
     {
         private readonly IUnitofWork _unitOfWork;

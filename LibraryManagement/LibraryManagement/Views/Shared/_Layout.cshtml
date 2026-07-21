@@ -1,4 +1,7 @@
-﻿<!DOCTYPE html>
+﻿@using System.Security.Claims
+@using LibraryManagement.Services
+@inject IMenuService MenuService
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -20,34 +23,22 @@
             <span class="brand-text">LibraryApp</span>
         </div>
         <nav class="sidebar-nav">
-            <a class="sidebar-link" asp-controller="Home" asp-action="Index" data-controller="Home">
-                <i class="fas fa-home"></i>
-                <span>Dashboard</span>
-            </a>
-            <a class="sidebar-link" asp-controller="Book" asp-action="Index" data-controller="Book">
-                <i class="fas fa-book"></i>
-                <span>Books</span>
-            </a>
-            <a class="sidebar-link" asp-controller="Author" asp-action="Index" data-controller="Author">
-                <i class="fas fa-pen-fancy"></i>
-                <span>Authors</span>
-            </a>
-            <a class="sidebar-link" asp-controller="Publisher" asp-action="Index" data-controller="Publisher">
-                <i class="fas fa-building"></i>
-                <span>Publishers</span>
-            </a>
-            <a class="sidebar-link" asp-controller="Genre" asp-action="Index" data-controller="Genre">
-                <i class="fas fa-tags"></i>
-                <span>Genres</span>
-            </a>
-            <a class="sidebar-link" asp-controller="Member" asp-action="Index" data-controller="Member">
-                <i class="fas fa-users"></i>
-                <span>Members</span>
-            </a>
-            <a class="sidebar-link" asp-controller="BookIssue" asp-action="Index" data-controller="BookIssue">
-                <i class="fas fa-exchange-alt"></i>
-                <span>Issue / Return</span>
-            </a>
+            @{
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                var menus = userId != null ? await MenuService.GetUserMenusAsync(userId) : new List<LibraryManagement.Models.Identity.MenuItem>();
+            }
+            @foreach (var menu in menus)
+            {
+                <a class="sidebar-link" asp-controller="@menu.Controller" asp-action="@menu.Action" data-controller="@menu.Controller">
+                    <i class="@menu.IconClass"></i>
+                    <span>@menu.Name</span>
+                </a>
+            }
+            <div class="topbar-right">
+
+                <partial name="_LoginPartial" />
+
+            </div>
         </nav>
     </aside>
 

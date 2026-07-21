@@ -1,0 +1,68 @@
+@model LibraryManagement.ViewModel.UserVM
+
+<div class="container">
+    <h2>Manage User: @Model.FullName</h2>
+    <p class="text-muted">@Model.Email</p>
+
+    <form method="post">
+        <input asp-for="UserId" hidden />
+        <input asp-for="Email" hidden />
+        <input asp-for="FullName" hidden />
+
+        <div class="mb-4">
+            <label class="form-label fw-bold">Roles</label>
+            <div class="card">
+                <div class="card-body">
+                    @for (int i = 0; i < Model.Roles.Count; i++)
+                    {
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="checkbox"
+                                   name="Roles[@i].IsSelected"
+                                   value="true"
+                                   @(Model.Roles[i].IsSelected ? "checked" : "") />
+                            <input type="hidden" name="Roles[@i].RoleId" value="@Model.Roles[i].RoleId" />
+                            <input type="hidden" name="Roles[@i].RoleName" value="@Model.Roles[i].RoleName" />
+                            <label class="form-check-label">@Model.Roles[i].RoleName</label>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="mb-4">
+            <label class="form-label fw-bold">Direct Permissions</label>
+
+            @{
+                var modules = Model.DirectPermissions.Select(p => p.Module).Distinct().OrderBy(m => m);
+            }
+
+            @foreach (var module in modules)
+            {
+                <div class="card mb-2">
+                    <div class="card-header">
+                        <strong>@module</strong>
+                    </div>
+                    <div class="card-body">
+                        @foreach (var perm in Model.DirectPermissions.Where(p => p.Module == module))
+                        {
+                            var idx = Model.DirectPermissions.IndexOf(perm);
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="checkbox"
+                                       name="DirectPermissions[@idx].IsSelected"
+                                       value="true"
+                                       @(perm.IsSelected ? "checked" : "") />
+                                <input type="hidden" name="DirectPermissions[@idx].PermissionId" value="@perm.PermissionId" />
+                                <input type="hidden" name="DirectPermissions[@idx].PermissionName" value="@perm.PermissionName" />
+                                <input type="hidden" name="DirectPermissions[@idx].Module" value="@perm.Module" />
+                                <label class="form-check-label">@perm.PermissionName</label>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+
+        <button type="submit" class="btn btn-success">Save</button>
+        <a asp-action="Index" class="btn btn-secondary">Back</a>
+    </form>
+</div>

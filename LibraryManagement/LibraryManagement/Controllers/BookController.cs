@@ -2,11 +2,13 @@
 using LibraryManagement.Repository;
 using LibraryManagement.Repository.IRepository;
 using LibraryManagement.ViewModel;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore.Metadata;
 
 namespace LibraryManagement.Controllers
 {
+    [Authorize]
     public class BookController : Controller
     {
         private readonly IUnitofWork _unitofWork;
@@ -22,6 +24,8 @@ namespace LibraryManagement.Controllers
         {
             _unitofWork = unitofWork;
         }
+
+        [Authorize(Policy = "Books.View")]
         public IActionResult Index()
         {
             var VM = new BookVM
@@ -30,6 +34,8 @@ namespace LibraryManagement.Controllers
             };
             return View(VM);
         }
+
+        [Authorize(Policy = "Books.Create")]
         public IActionResult Upsert (int? id)
         {
             BookVM vm = new();
@@ -49,6 +55,8 @@ namespace LibraryManagement.Controllers
             PopulateBookVM(vm);
             return View(vm);
         }
+
+        [Authorize(Policy = "Books.Edit")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult Upsert(BookVM vm)
@@ -112,6 +120,8 @@ namespace LibraryManagement.Controllers
 
             return RedirectToAction(nameof(Index));
         }
+
+        [Authorize(Policy = "Books.Delete")]
         public IActionResult Delete(int id)
         {
             var book = _unitofWork.Book.Get(
@@ -126,6 +136,8 @@ namespace LibraryManagement.Controllers
 
             return View(book);
         }
+
+        [Authorize(Policy = "Books.Delete")]
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public IActionResult DeletePost(int id)

@@ -1,11 +1,13 @@
 using LibraryManagement.Models;
 using LibraryManagement.Repository.IRepository;
 using LibraryManagement.ViewModel;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 
 namespace LibraryManagement.Controllers
 {
+    [Authorize]
     public class HomeController : Controller
     {
         private readonly IUnitofWork _unitOfWork;

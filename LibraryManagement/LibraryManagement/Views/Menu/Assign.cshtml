@@ -1,0 +1,28 @@
+@model LibraryManagement.ViewModel.MenuConfigVM
+
+<div class="container">
+    <h2>Assign Menu Items to: @Model.RoleName</h2>
+
+    <form method="post">
+        <input asp-for="RoleId" hidden />
+        <input asp-for="RoleName" hidden />
+
+        <div class="mb-3">
+            @for (int i = 0; i < Model.MenuItems.Count; i++)
+            {
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox"
+                           name="MenuItems[@i].IsSelected"
+                           value="true"
+                           @(Model.MenuItems[i].IsSelected ? "checked" : "") />
+                    <input type="hidden" name="MenuItems[@i].MenuItemId" value="@Model.MenuItems[i].MenuItemId" />
+                    <input type="hidden" name="MenuItems[@i].Name" value="@Model.MenuItems[i].Name" />
+                    <label class="form-check-label">@Model.MenuItems[i].Name</label>
+                </div>
+            }
+        </div>
+
+        <button type="submit" class="btn btn-success">Save</button>
+        <a asp-controller="Role" asp-action="Index" class="btn btn-secondary">Back</a>
+    </form>
+</div>

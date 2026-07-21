@@ -8,6 +8,7 @@
         IGenreRepo Genre { get; }
         IMemberRepo Member { get; }
         IPublisherRepo Publisher { get; }
+        IMenuItemRepo MenuItem { get; }
         void Save();
     }
 }

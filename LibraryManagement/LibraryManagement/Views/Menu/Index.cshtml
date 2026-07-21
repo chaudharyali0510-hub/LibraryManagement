@@ -1,0 +1,45 @@
+@model IEnumerable<LibraryManagement.Models.Identity.MenuItem>
+
+<div class="container">
+    <h2>Menu Configuration</h2>
+
+    <a asp-action="Upsert" class="btn btn-primary">Add Menu Item</a>
+
+    <table class="table table-bordered mt-3">
+        <thead>
+            <tr>
+                <th>Order</th>
+                <th>Name</th>
+                <th>Controller</th>
+                <th>Action</th>
+                <th>Icon</th>
+                <th>Visible</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.SortOrder</td>
+                    <td>@item.Name</td>
+                    <td>@item.Controller</td>
+                    <td>@item.Action</td>
+                    <td><i class="@item.IconClass"></i> @item.IconClass</td>
+                    <td>@(item.IsVisible ? "Yes" : "No")</td>
+                    <td>
+                        <a asp-action="Upsert" asp-route-id="@item.Id" class="btn btn-warning">Edit</a>
+                        <form asp-action="Delete" asp-route-id="@item.Id" method="post" class="d-inline">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn btn-danger">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <hr />
+    <h4>Assign Menu Items to Roles</h4>
+    <p>Go to <a asp-controller="Role" asp-action="Index">Role Management</a> and click "Menu Access" for a role.</p>
+</div>

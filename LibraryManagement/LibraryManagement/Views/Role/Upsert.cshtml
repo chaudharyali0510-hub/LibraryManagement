@@ -1,0 +1,55 @@
+@model LibraryManagement.ViewModel.RoleVM
+
+<div class="container">
+    <h2>@(string.IsNullOrEmpty(Model.Id) ? "Create Role" : "Edit Role")</h2>
+
+    <form method="post">
+        <input asp-for="Id" hidden />
+
+        <div class="mb-3">
+            <label asp-for="Name" class="form-label"></label>
+            <input asp-for="Name" class="form-control" />
+            <span asp-validation-for="Name" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Description" class="form-label"></label>
+            <input asp-for="Description" class="form-control" />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label fw-bold">Permissions</label>
+
+            @{
+                var modules = Model.Permissions.Select(p => p.Module).Distinct().OrderBy(m => m);
+            }
+
+            @foreach (var module in modules)
+            {
+                <div class="card mb-2">
+                    <div class="card-header">
+                        <strong>@module</strong>
+                    </div>
+                    <div class="card-body">
+                        @foreach (var perm in Model.Permissions.Where(p => p.Module == module))
+                        {
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="checkbox"
+                                       name="Permissions[@Model.Permissions.IndexOf(perm)].IsSelected"
+                                       value="true"
+                                       @(perm.IsSelected ? "checked" : "") />
+                                <input type="hidden" name="Permissions[@Model.Permissions.IndexOf(perm)].PermissionId" value="@perm.PermissionId" />
+                                <input type="hidden" name="Permissions[@Model.Permissions.IndexOf(perm)].PermissionName" value="@perm.PermissionName" />
+                                <input type="hidden" name="Permissions[@Model.Permissions.IndexOf(perm)].Module" value="@perm.Module" />
+                                <label class="form-check-label">@perm.PermissionName</label>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+
+        <button type="submit" class="btn btn-success">Save</button>
+        <a asp-action="Index" class="btn btn-secondary">Back</a>
+    </form>
+</div>

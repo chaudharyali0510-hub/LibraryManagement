@@ -1,9 +1,11 @@
 ﻿using LibraryManagement.Models;
 using LibraryManagement.Repository.IRepository;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LibraryManagement.Controllers
 {
+    [Authorize]
     public class PublisherController : Controller
     {
         private readonly IUnitofWork _unitofWork;

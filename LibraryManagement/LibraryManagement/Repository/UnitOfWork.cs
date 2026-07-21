@@ -16,6 +16,7 @@ namespace LibraryManagement.Repository
             Genre = new GenreRepo(_db);
             Member = new MemberRepo(_db);
             Publisher = new PublisherRepo(_db);
+            MenuItem = new MenuItemRepo(_db);
         }
 
         public IAuthorRepo Author {  get; private set; }
@@ -29,6 +30,8 @@ namespace LibraryManagement.Repository
         public IMemberRepo Member { get; private set; }
 
         public IPublisherRepo Publisher { get; private set; }
+
+        public IMenuItemRepo MenuItem { get; private set; }
 
         public void Save()
         {
