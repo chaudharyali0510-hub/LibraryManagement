@@ -18,6 +18,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
 using LibraryManagement.Data;
+using LibraryManagement.Models;
 using LibraryManagement.Models.Identity;
 
 namespace LibraryManagement.Areas.Identity.Pages.Account;
@@ -30,13 +31,15 @@ public class RegisterModel : PageModel
     private readonly IUserEmailStore<ApplicationUser> _emailStore;
     private readonly ILogger<RegisterModel> _logger;
     private readonly IEmailSender _emailSender;
+    private readonly ApplicationDbContext _context;
 
     public RegisterModel(
         UserManager<ApplicationUser> userManager,
         IUserStore<ApplicationUser> userStore,
         SignInManager<ApplicationUser> signInManager,
         ILogger<RegisterModel> logger,
-        IEmailSender emailSender)
+        IEmailSender emailSender,
+        ApplicationDbContext context)
     {
         _userManager = userManager;
         _userStore = userStore;
@@ -44,6 +47,7 @@ public class RegisterModel : PageModel
         _signInManager = signInManager;
         _logger = logger;
         _emailSender = emailSender;
+        _context = context;
     }
 
     /// <summary>
@@ -128,6 +132,20 @@ public class RegisterModel : PageModel
                 _logger.LogInformation("User created a new account with password.");
 
                 await _userManager.AddToRoleAsync(user, "Member");
+
+                var nameParts = Input.FullName.Split(' ', 2);
+                var member = new Member
+                {
+                    FirstName = nameParts[0],
+                    LastName = nameParts.Length > 1 ? nameParts[1] : "",
+                    Email = Input.Email,
+                    PhoneNumber = "",
+                    Address = "",
+                    MembershipDate = DateTime.Now,
+                    isActive = true
+                };
+                _context.Members.Add(member);
+                await _context.SaveChangesAsync();
 
                 var userId = await _userManager.GetUserIdAsync(user);
                 var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
