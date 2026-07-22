@@ -3,9 +3,11 @@
 
 <form method="post">
 
-    <input asp-for="Id" hidden />
+    @if (Model != null && Model.Id != 0)
+    {
+        <input asp-for="Id" hidden />
 
-
+    }
     <div class="mb-3">
 
         <label asp-for="Name"></label>
@@ -27,7 +29,7 @@
         <label asp-for="Description"></label>
 
         <textarea asp-for="Description"
-                  class="form-control" />
+                  class="form-control" ></textarea>
 
     </div>
 

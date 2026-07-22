@@ -1,4 +1,6 @@
-﻿namespace LibraryManagement.Repository.IRepository
+﻿using LibraryManagement.Models;
+
+namespace LibraryManagement.Repository.IRepository
 {
     public interface IUnitofWork
     {

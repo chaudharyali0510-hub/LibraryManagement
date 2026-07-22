@@ -1,7 +1,10 @@
-﻿namespace LibraryManagement.Models
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace LibraryManagement.Models
 {
     public class Author
     {
+        [Key]
         public int Id { get; set; }
 
         public string FirstName { get; set; }

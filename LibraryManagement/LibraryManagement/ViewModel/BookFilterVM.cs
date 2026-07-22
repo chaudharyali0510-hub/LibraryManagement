@@ -11,7 +11,7 @@ namespace LibraryManagement.ViewModel
         public string? Availability { get; set; }
         public string? SortOrder { get; set; }
         public int Page { get; set; } = 1;
-        public int PageSize { get; set; } = 9;
+        public int PageSize { get; set; } = 6;
 
         public SelectList? Authors { get; set; }
         public SelectList? Publishers { get; set; }

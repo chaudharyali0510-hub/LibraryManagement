@@ -2,9 +2,10 @@
 
 
 <form method="post">
-
-    <input asp-for="Id" hidden />
-
+     @if (Model != null && Model.Id != 0)
+        {
+            <input asp-for="Id" hidden />
+        }
 
     <div class="mb-3">
 

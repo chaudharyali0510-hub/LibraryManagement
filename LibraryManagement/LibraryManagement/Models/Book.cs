@@ -33,7 +33,7 @@
         public string? CoverImageUrl { get; set; }
 
         public bool IsAvailable { get; set; }
-
+        
         public ICollection<BookGenre> BookGenres { get; set; }
             = new List<BookGenre>();
 

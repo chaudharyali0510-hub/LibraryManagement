@@ -78,7 +78,7 @@ namespace LibraryManagement.Controllers
             {
                 Book = book,
                 ActiveIssues = book.BookIssues.Where(bi => !bi.isReturned).OrderByDescending(bi => bi.DateIssue).ToList(),
-                IssueHistory = book.BookIssues.Where(bi => bi.isReturned).OrderByDescending(bi => bi.ReturnDate).ToList()
+                IssueHistory = book.BookIssues.Where(bi => bi.isReturned).OrderByDescending(bi => bi.ReturnDate).ToList(),
             };
 
             return View(vm);
