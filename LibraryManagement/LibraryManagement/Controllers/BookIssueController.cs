@@ -170,7 +170,7 @@ namespace LibraryManagement.Controllers
                 issue.FineAmount = daysLate * 2;
             }
 
-            issue.Book.AvailableCopies++;
+            issue.Book!.AvailableCopies++;
 
             _unitOfWork.Book.Update(issue.Book);
 

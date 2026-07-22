@@ -42,8 +42,8 @@ namespace LibraryManagement.Controllers
             var roles = allRoles.Select(r => new RoleCheckboxVM
             {
                 RoleId = r.Id,
-                RoleName = r.Name,
-                IsSelected = userRoles.Contains(r.Name)
+                RoleName = r.Name!,
+                IsSelected = userRoles.Contains(r.Name!)
             }).ToList();
 
             var userPermissionIds = _context.UserPermissions
@@ -62,7 +62,7 @@ namespace LibraryManagement.Controllers
             var vm = new UserVM
             {
                 UserId = user.Id,
-                Email = user.Email,
+                Email = user.Email!,
                 FullName = user.FullName,
                 Roles = roles,
                 DirectPermissions = permissions

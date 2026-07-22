@@ -85,7 +85,7 @@ public class RegisterModel : PageModel
         public string Email { get; set; } = default!;
         [Required]
         [Display(Name = "Full Name")]
-        public string FullName { get; set; }
+        public string FullName { get; set; } = null!;
 
         /// <summary>
         ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used

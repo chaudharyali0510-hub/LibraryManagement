@@ -2,6 +2,7 @@ using LibraryManagement.Models.Identity;
 using LibraryManagement.Repository.IRepository;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace LibraryManagement.Data
 {

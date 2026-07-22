@@ -98,7 +98,7 @@ namespace LibraryManagement.Controllers
             var vm = new MenuConfigVM
             {
                 RoleId = roleId,
-                RoleName = role.Name,
+                RoleName = role.Name!,
                 MenuItems = menuItems
             };
 

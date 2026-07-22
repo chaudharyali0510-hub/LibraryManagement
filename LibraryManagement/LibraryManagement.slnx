@@ -1,3 +1,5 @@
 <Solution>
   <Project Path="LibraryManagement/LibraryManagement.csproj" />
+  <Project Path="LibraryManagement.Models/LibraryManagement.Models.csproj" />
+  <Project Path="LibraryManagement.Repository/LibraryManagement.Repository.csproj" />
 </Solution>

@@ -38,7 +38,7 @@ namespace LibraryManagement.Controllers
                 if (role == null) return NotFound();
 
                 vm.Id = role.Id;
-                vm.Name = role.Name;
+                vm.Name = role.Name!;
                 vm.Description = role.Description;
 
                 var rolePermissionIds = _context.RolePermissions

@@ -94,7 +94,7 @@ namespace LibraryManagement.Controllers
             }
             else
             {
-                vm.Book = _unitofWork.Book.Get(b => b.Id == id, includeProperties: "BookGenres");
+                vm.Book = _unitofWork.Book.Get(b => b.Id == id, includeProperties: "BookGenres")!;
                 if (vm.Book == null)
                 {
                     return NotFound();
@@ -145,7 +145,7 @@ namespace LibraryManagement.Controllers
                     includeProperties: "BookGenres"
                 );
 
-                int previouslyIssued = bookFromDb.TotalCopies - bookFromDb.AvailableCopies;
+                int previouslyIssued = bookFromDb!.TotalCopies - bookFromDb.AvailableCopies;
 
                 bookFromDb.Title = vm.Book.Title;
                 bookFromDb.ISBN = vm.Book.ISBN;
@@ -171,7 +171,7 @@ namespace LibraryManagement.Controllers
                 {
                     FileUpload.DeleteImage(
                         _webHostEnvironment.WebRootPath,
-                        bookFromDb.CoverImageUrl);
+                        bookFromDb.CoverImageUrl!);
 
                     bookFromDb.CoverImageUrl =
                         FileUpload.UploadImage(
@@ -216,7 +216,7 @@ namespace LibraryManagement.Controllers
             }
             FileUpload.DeleteImage(
                 _webHostEnvironment.WebRootPath,
-                book.CoverImageUrl);
+                book.CoverImageUrl!);
 
             _unitofWork.Book.Remove(book);
             _unitofWork.Save();
