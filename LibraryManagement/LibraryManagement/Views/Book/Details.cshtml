@@ -1,0 +1,226 @@
+@inject IAuthorizationService AuthorizationService
+@model LibraryManagement.ViewModel.BookDetailsVM
+
+@{
+    var book = Model.Book;
+    var isAvailable = book.AvailableCopies > 0;
+}
+
+<div class="container py-4">
+
+    <div class="mb-4">
+        <a asp-action="Index" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-1"></i> Back to Books
+        </a>
+    </div>
+
+    <div class="row g-4">
+
+        <div class="col-lg-5">
+            <div class="card shadow-sm">
+                @if (!string.IsNullOrEmpty(book.CoverImageUrl))
+                {
+                    <img src="@book.CoverImageUrl" class="card-img-top" style="max-height:500px; object-fit:cover;" />
+                }
+                else
+                {
+                    <img src="https://placehold.co/500x400?text=No+Cover" class="card-img-top" style="max-height:500px; object-fit:cover;" />
+                }
+            </div>
+        </div>
+
+        <div class="col-lg-7">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+
+                    <h2 class="mb-3">@book.Title</h2>
+
+                    <div class="mb-3">
+                        @foreach (var genre in book.BookGenres)
+                        {
+                            <span class="badge bg-secondary me-1 mb-1 fs-6">@genre.Genre?.Name</span>
+                        }
+                    </div>
+
+                    <div class="mb-3">
+                        @if (isAvailable)
+                        {
+                            <span class="badge bg-success fs-6">Available</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-danger fs-6">Out of Stock</span>
+                        }
+                    </div>
+
+                    <table class="table table-borderless">
+                        <tbody>
+                            <tr>
+                                <th style="width:180px;" class="text-muted">ISBN</th>
+                                <td>@book.ISBN</td>
+                            </tr>
+                            <tr>
+                                <th class="text-muted">Author</th>
+                                <td>@book.Author?.FirstName @book.Author?.LastName</td>
+                            </tr>
+                            <tr>
+                                <th class="text-muted">Publisher</th>
+                                <td>@book.Publisher?.Name</td>
+                            </tr>
+                            <tr>
+                                <th class="text-muted">Publication Year</th>
+                                <td>@book.PublicationYear</td>
+                            </tr>
+                            <tr>
+                                <th class="text-muted">Edition</th>
+                                <td>@(book.Edition ?? "N/A")</td>
+                            </tr>
+                            <tr>
+                                <th class="text-muted">Language</th>
+                                <td>@(book.Language ?? "N/A")</td>
+                            </tr>
+                            <tr>
+                                <th class="text-muted">Total Copies</th>
+                                <td><span class="badge bg-primary">@book.TotalCopies</span></td>
+                            </tr>
+                            <tr>
+                                <th class="text-muted">Available Copies</th>
+                                <td>
+                                    @if (isAvailable)
+                                    {
+                                        <span class="badge bg-success">@book.AvailableCopies</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-danger">0</span>
+                                    }
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    @if (!string.IsNullOrWhiteSpace(book.Description))
+                    {
+                        <hr />
+                        <h5>Description</h5>
+                        <p class="text-muted">@book.Description</p>
+                    }
+
+                </div>
+
+                <div class="card-footer bg-white">
+                    <div class="d-flex gap-2 flex-wrap">
+                        @if ((await AuthorizationService.AuthorizeAsync(User, "Books.Edit")).Succeeded)
+                        {
+                            <a asp-action="Upsert" asp-route-id="@book.Id" class="btn btn-warning">
+                                <i class="fas fa-edit me-1"></i> Edit
+                            </a>
+                        }
+                        @if ((await AuthorizationService.AuthorizeAsync(User, "Issues.Create")).Succeeded && isAvailable)
+                        {
+                            <a asp-controller="BookIssue" asp-action="Upsert" asp-route-bookId="@book.Id" class="btn btn-success">
+                                <i class="fas fa-book-open me-1"></i> Issue Book
+                            </a>
+                        }
+                        @if ((await AuthorizationService.AuthorizeAsync(User, "Books.Delete")).Succeeded)
+                        {
+                            <a asp-action="Delete" asp-route-id="@book.Id" class="btn btn-danger">
+                                <i class="fas fa-trash me-1"></i> Delete
+                            </a>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    @if (Model.ActiveIssues.Any())
+    {
+        <div class="card shadow-sm mt-4">
+            <div class="card-header bg-white">
+                <h5 class="mb-0"><i class="fas fa-hand-holding me-2"></i>Current Borrowers</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Member</th>
+                                <th>Issue Date</th>
+                                <th>Due Date</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var issue in Model.ActiveIssues)
+                            {
+                                <tr>
+                                    <td>@issue.Member?.FirstName @issue.Member?.LastName</td>
+                                    <td>@issue.DateIssue.ToShortDateString()</td>
+                                    <td>@issue.DueDate.ToShortDateString()</td>
+                                    <td>
+                                        @if (issue.DueDate < DateTime.Now)
+                                        {
+                                            <span class="badge bg-danger">Overdue</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-warning text-dark">Active</span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    }
+
+    @if (Model.IssueHistory.Any())
+    {
+        <div class="card shadow-sm mt-4">
+            <div class="card-header bg-white">
+                <h5 class="mb-0"><i class="fas fa-history me-2"></i>Issue History</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Member</th>
+                                <th>Issue Date</th>
+                                <th>Due Date</th>
+                                <th>Return Date</th>
+                                <th>Fine</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var issue in Model.IssueHistory)
+                            {
+                                <tr>
+                                    <td>@issue.Member?.FirstName @issue.Member?.LastName</td>
+                                    <td>@issue.DateIssue.ToShortDateString()</td>
+                                    <td>@issue.DueDate.ToShortDateString()</td>
+                                    <td>@(issue.ReturnDate?.ToShortDateString() ?? "N/A")</td>
+                                    <td>
+                                        @if (issue.FineAmount > 0)
+                                        {
+                                            <span class="text-danger fw-bold">$@issue.FineAmount.ToString("F2")</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-success">$0.00</span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    }
+
+</div>

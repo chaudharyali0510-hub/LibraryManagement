@@ -1,219 +1,256 @@
 ﻿@inject IAuthorizationService AuthorizationService
-@model LibraryManagement.ViewModel.BookVM
+@using X.PagedList.Mvc.Core
+@model X.PagedList.IPagedList<LibraryManagement.Models.Book>
+
+@{
+    var filter = (LibraryManagement.ViewModel.BookFilterVM)ViewBag.Filter;
+}
 
 <div class="container">
 
-    <div class="row mb-3">
+    <div class="row mb-4">
         <div class="col-6">
             <h2>Books</h2>
         </div>
-
         <div class="col-6 text-end">
             @if ((await AuthorizationService.AuthorizeAsync(User, "Books.Create")).Succeeded)
             {
-                <a asp-action="Upsert" class="btn btn-primary">
-                    Add New Book
-                </a>
+                <a asp-action="Upsert" class="btn btn-primary">Add New Book</a>
             }
         </div>
     </div>
 
+    <form asp-action="Index" method="get" class="card shadow-sm p-3 mb-4">
+        <div class="row g-3 align-items-end">
 
-    <table class="table table-bordered table-striped">
+            <div class="col-md-3">
+                <label class="form-label fw-semibold">Search</label>
+                <input type="text" name="Search" value="@filter.Search" class="form-control" placeholder="Title or ISBN..." />
+            </div>
 
-        <thead>
-            <tr>
-                <th>Title</th>
-                <th>ISBN</th>
-                <th>Author</th>
-                <th>Publisher</th>
-                <th>Genres</th>
-                <th>Copies</th>
-                <th>Available</th>
-                <th></th>
-            </tr>
-        </thead>
+            <div class="col-md-2">
+                <label class="form-label fw-semibold">Author</label>
+                <select name="AuthorId" asp-items="filter.Authors" class="form-select">
+                    <option value="">All Authors</option>
+                </select>
+            </div>
 
+            <div class="col-md-2">
+                <label class="form-label fw-semibold">Publisher</label>
+                <select name="PublisherId" asp-items="filter.Publishers" class="form-select">
+                    <option value="">All Publishers</option>
+                </select>
+            </div>
 
-        <tbody>
+            <div class="col-md-2">
+                <label class="form-label fw-semibold">Genre</label>
+                <select name="GenreId" asp-items="filter.Genres" class="form-select">
+                    <option value="">All Genres</option>
+                </select>
+            </div>
 
-            @foreach (var book in Model.Books)
+            <div class="col-md-2">
+                <label class="form-label fw-semibold">Availability</label>
+                <select name="Availability" class="form-select">
+                    <option value="">All</option>
+                    <option value="available" selected="@(filter.Availability == "available")">Available Only</option>
+                    <option value="outofstock" selected="@(filter.Availability == "outofstock")">Out of Stock</option>
+                </select>
+            </div>
+
+            <div class="col-md-1">
+                <button type="submit" class="btn btn-primary w-100" title="Apply Filters">
+                    <i class="fas fa-search"></i>
+                </button>
+            </div>
+
+        </div>
+
+        <div class="row g-3 mt-1 align-items-end">
+
+            <div class="col-md-2">
+                <label class="form-label fw-semibold">Sort By</label>
+                <select name="SortOrder" class="form-select" onchange="this.form.submit()">
+                    <option value="title_asc" selected="@(filter.SortOrder == "title_asc" || string.IsNullOrEmpty(filter.SortOrder))">Title A-Z</option>
+                    <option value="title_desc" selected="@(filter.SortOrder == "title_desc")">Title Z-A</option>
+                    <option value="year_desc" selected="@(filter.SortOrder == "year_desc")">Newest Publication</option>
+                    <option value="year_asc" selected="@(filter.SortOrder == "year_asc")">Oldest Publication</option>
+                    <option value="copies_desc" selected="@(filter.SortOrder == "copies_desc")">Available Copies</option>
+                </select>
+            </div>
+
+            <div class="col-md-2">
+                <a asp-action="Index" class="btn btn-outline-secondary w-100">Clear Filters</a>
+            </div>
+
+            <div class="col-md-8 text-end">
+                <span class="text-muted">Showing @Model.Count of @Model.TotalItemCount books</span>
+            </div>
+
+        </div>
+
+        <input type="hidden" name="Page" value="1" />
+    </form>
+
+    @if (!Model.Any())
+    {
+        <div class="text-center py-5">
+            <i class="fas fa-book-open fa-3x text-muted mb-3"></i>
+            <h4 class="text-muted">No books found</h4>
+            <p class="text-muted">Try adjusting your search or filter criteria.</p>
+        </div>
+    }
+    else
+    {
+        <div class="row">
+            @foreach (var book in Model)
             {
-                <tr>
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="card shadow-sm h-100">
 
-                    <td>
-                        @book.Title
-                    </td>
-
-
-                    <td>
-                        @book.ISBN
-                    </td>
-
-
-                    <td>
-                        @book.Author?.FirstName
-                        @book.Author?.LastName
-                    </td>
-
-
-                    <td>
-                        @book.Publisher?.Name
-                    </td>
-
-
-                    <td>
-                        @foreach (var genre in book.BookGenres)
+                        @if (!string.IsNullOrEmpty(book.CoverImageUrl))
                         {
-                            <span class="badge bg-secondary">
-                                @genre.Genre?.Name
-                            </span>
+                            <img src="@book.CoverImageUrl" class="card-img-top" style="height:300px; object-fit:cover;" />
                         }
-                    </td>
-
-
-                    <td>
-                        @book.TotalCopies
-                    </td>
-
-
-                    <td>
-                        @book.AvailableCopies
-                    </td>
-
-                    <td>
-                        @if ((await AuthorizationService.AuthorizeAsync(User, "Books.Edit")).Succeeded)
+                        else
                         {
-                            <a asp-action="Upsert"
-                               asp-route-id="@book.Id"
-                               class="btn btn-warning btn-sm">
-                                Edit
-                            </a>
+                            <img src="https://placehold.co/400x300?text=No+Cover" class="card-img-top" style="height:300px; object-fit:cover;" />
                         }
 
-                        @if ((await AuthorizationService.AuthorizeAsync(User, "Books.Delete")).Succeeded)
-                        {
-                            <a asp-action="Delete"
-                               asp-route-id="@book.Id"
-                               class="btn btn-danger btn-sm">
-                                Delete
-                            </a>
-                        }
+                        <div class="card-body d-flex flex-column">
 
-                        @if ((await AuthorizationService.AuthorizeAsync(User, "Issues.Create")).Succeeded)
-                        {
-                            <button class="btn btn-success btn-sm"
-                                    data-bs-toggle="modal"
-                                    data-bs-target="#issueModal-@book.Id">
-                                Issue Book
-                            </button>
-                        }
-                    </td>
-                </tr>
-                <div class="modal fade" id="issueModal-@book.Id" tabindex="-1">
+                            <h5 class="card-title">@book.Title</h5>
+                            <p class="text-muted mb-2">ISBN: @book.ISBN</p>
+                            <p class="mb-1">
+                                <strong>Author:</strong> @book.Author?.FirstName @book.Author?.LastName
+                            </p>
+                            <p class="mb-1">
+                                <strong>Publisher:</strong> @book.Publisher?.Name
+                            </p>
+                            <p class="mb-2">
+                                <strong>Genres</strong><br />
+                                @foreach (var genre in book.BookGenres)
+                                {
+                                    <span class="badge bg-secondary me-1 mb-1">@genre.Genre?.Name</span>
+                                }
+                            </p>
 
-                    <div class="modal-dialog">
+                            <hr />
 
-                        <div class="modal-content">
-
-                            <div class="modal-header">
-
-                                <h5 class="modal-title">
-                                    @book.Title - Issue Details
-                                </h5>
-
-                                <button type="button"
-                                        class="btn-close"
-                                        data-bs-dismiss="modal">
-                                </button>
-
+                            <div class="row text-center mb-3">
+                                <div class="col-6">
+                                    <h6>Total</h6>
+                                    <span class="badge bg-primary">@book.TotalCopies</span>
+                                </div>
+                                <div class="col-6">
+                                    <h6>Available</h6>
+                                    @if (book.AvailableCopies > 0)
+                                    {
+                                        <span class="badge bg-success">@book.AvailableCopies</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-danger">Out</span>
+                                    }
+                                </div>
                             </div>
 
+                            <div class="mt-auto">
+                                <div class="d-grid gap-2">
+                                    <a asp-action="Details" asp-route-id="@book.Id" class="btn btn-info">Details</a>
 
+                                    @if ((await AuthorizationService.AuthorizeAsync(User, "Books.Edit")).Succeeded)
+                                    {
+                                        <a asp-action="Upsert" asp-route-id="@book.Id" class="btn btn-warning">Edit</a>
+                                    }
+
+                                    @if ((await AuthorizationService.AuthorizeAsync(User, "Books.Delete")).Succeeded)
+                                    {
+                                        <a asp-action="Delete" asp-route-id="@book.Id" class="btn btn-danger">Delete</a>
+                                    }
+
+                                    @if ((await AuthorizationService.AuthorizeAsync(User, "Issues.Create")).Succeeded)
+                                    {
+                                        <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#issueModal-@book.Id">
+                                            Issue Book
+                                        </button>
+                                    }
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal fade" id="issueModal-@book.Id" tabindex="-1">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">@book.Title - Issue Details</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
                             <div class="modal-body">
-
-                                <h6>Currently Issued To:</h6>
-
-
                                 @{
-                                    var activeIssues = book.BookIssues
-                                        .Where(x => !x.isReturned)
-                                        .ToList();
+                                    var activeIssues = book.BookIssues.Where(x => !x.isReturned).ToList();
                                 }
-
-
+                                <h6>Currently Issued To</h6>
                                 @if (activeIssues.Any())
                                 {
-                                    <div style="max-height: 260px; overflow-y: auto;">
+                                    <div style="max-height:250px;overflow-y:auto">
                                         <ul class="list-group">
-
-                                        @foreach (var issue in activeIssues)
-                                        {
-                                            <li class="list-group-item">
-
-                                                @issue.Member?.FirstName @issue.Member?.LastName
-
-                                                <span class="badge bg-warning float-end ms-2">
-                                                    Due:
-                                                    @issue.DueDate.ToShortDateString()
-                                                </span>
-
-                                                <span class="badge bg-info float-end">
-                                                    Issued:
-                                                    @issue.DateIssue.ToShortDateString()
-                                                </span>
-
-                                            </li>
-                                        }
-
-                                     </ul>
-                                   </div>
+                                            @foreach (var issue in activeIssues)
+                                            {
+                                                <li class="list-group-item">
+                                                    <strong>@issue.Member?.FirstName @issue.Member?.LastName</strong>
+                                                    <div class="mt-2">
+                                                        <span class="badge bg-info">Issued: @issue.DateIssue.ToShortDateString()</span>
+                                                        <span class="badge bg-warning text-dark">Due: @issue.DueDate.ToShortDateString()</span>
+                                                    </div>
+                                                </li>
+                                            }
+                                        </ul>
+                                    </div>
                                 }
                                 else
                                 {
-                                    <p class="text-muted">
-                                        No one has this book currently.
-                                    </p>
+                                    <p class="text-muted">No active issues.</p>
                                 }
-
                             </div>
-
-
                             <div class="modal-footer">
-
                                 @if ((await AuthorizationService.AuthorizeAsync(User, "Issues.Create")).Succeeded)
                                 {
-                                    <a asp-controller="BookIssue"
-                                       asp-action="Upsert"
-                                       asp-route-bookId="@book.Id"
-                                       class="btn btn-success">
-
-                                        Issue Book
-
-                                    </a>
+                                    <a asp-controller="BookIssue" asp-action="Upsert" asp-route-bookId="@book.Id" class="btn btn-success">Issue Book</a>
                                 }
-
-
-                                <button type="button"
-                                        class="btn btn-secondary"
-                                        data-bs-dismiss="modal">
-
-                                    Close
-
-                                </button>
-
+                                <button class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                             </div>
-
-
                         </div>
-
                     </div>
-
                 </div>
             }
+        </div>
 
-        </tbody>
-
-    </table>
+        <div class="d-flex justify-content-center mt-3">
+            @Html.PagedListPager(Model, page => Url.Action("Index", new
+            {
+                page,
+                filter.Search,
+                filter.AuthorId,
+                filter.PublisherId,
+                filter.GenreId,
+                filter.Availability,
+                filter.SortOrder
+            }),
+            new PagedListRenderOptions
+            {
+                LiElementClasses = new[] { "page-item" },
+                PageClasses = new[] { "page-link" },
+                ActiveLiElementClass = "active",
+                DisplayLinkToFirstPage = PagedListDisplayMode.IfNeeded,
+                DisplayLinkToLastPage = PagedListDisplayMode.IfNeeded,
+                DisplayLinkToPreviousPage = PagedListDisplayMode.Always,
+                DisplayLinkToNextPage = PagedListDisplayMode.Always
+            })
+        </div>
+    }
 
 </div>

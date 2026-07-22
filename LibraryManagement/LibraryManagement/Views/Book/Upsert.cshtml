@@ -1,7 +1,7 @@
 ﻿@model LibraryManagement.ViewModel.BookVM
 
 
-<form method="post">
+<form method="post" enctype="multipart/form-data">
 
     <input asp-for="Book.Id" hidden />
 
@@ -97,6 +97,21 @@
         <input asp-for="Book.TotalCopies"
                class="form-control" />
     </div>
+    <div class="mb-3">
+
+        <label>Book Cover</label>
+
+        <input asp-for="ImageFile"
+               type="file"
+               class="form-control" />
+
+    </div>
+    @if (!string.IsNullOrEmpty(Model.Book.CoverImageUrl))
+    {
+        <img src="@Model.Book.CoverImageUrl"
+             width="180"
+             class="img-thumbnail" />
+    }
 
 
     <button type="submit" class="btn btn-success">

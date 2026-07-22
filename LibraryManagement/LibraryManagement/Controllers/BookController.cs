@@ -1,10 +1,13 @@
 ﻿using LibraryManagement.Models;
-using LibraryManagement.Repository;
 using LibraryManagement.Repository.IRepository;
+using LibraryManagement.Utility;
 using LibraryManagement.ViewModel;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
+using X.PagedList;
+using X.PagedList.Mvc.Core;
 
 namespace LibraryManagement.Controllers
 {
@@ -12,34 +15,80 @@ namespace LibraryManagement.Controllers
     public class BookController : Controller
     {
         private readonly IUnitofWork _unitofWork;
+        private readonly IWebHostEnvironment _webHostEnvironment;
+
+        public BookController(IUnitofWork unitofWork, IWebHostEnvironment webHostEnvironment)
+        {
+            _unitofWork = unitofWork;
+            _webHostEnvironment = webHostEnvironment;
+        }
+
         private BookVM PopulateBookVM(BookVM vm)
         {
             vm.AuthorList = _unitofWork.Author.GetAll();
             vm.PublisherList = _unitofWork.Publisher.GetAll();
-            vm.GenreList= _unitofWork.Genre.GetAll();
-
+            vm.GenreList = _unitofWork.Genre.GetAll();
             return vm;
         }
-        public BookController(IUnitofWork unitofWork)
+
+        private void PopulateFilterSelectLists(BookFilterVM filter)
         {
-            _unitofWork = unitofWork;
+            var authors = _unitofWork.Author.GetAll().OrderBy(a => a.LastName);
+            var publishers = _unitofWork.Publisher.GetAll().OrderBy(p => p.Name);
+            var genres = _unitofWork.Genre.GetAll().OrderBy(g => g.Name);
+
+            filter.Authors = new SelectList(authors, "Id", "FirstName", filter.AuthorId);
+            filter.Publishers = new SelectList(publishers, "Id", "Name", filter.PublisherId);
+            filter.Genres = new SelectList(genres, "Id", "Name", filter.GenreId);
         }
 
         [Authorize(Policy = "Books.View")]
-        public IActionResult Index()
+        public async Task<IActionResult> Index(BookFilterVM filter)
         {
-            var VM = new BookVM
+            filter.Page = Math.Max(1, filter.Page);
+
+            var query = _unitofWork.Book.GetFilteredBooks(filter);
+
+            var totalCount = await query.CountAsync();
+            var items = await query
+                .Skip((filter.Page - 1) * filter.PageSize)
+                .Take(filter.PageSize)
+                .ToListAsync();
+            var pagedList = new StaticPagedList<Book>(items, filter.Page, filter.PageSize, totalCount);
+
+            filter.Authors = new SelectList(
+                _unitofWork.Author.GetAll().OrderBy(a => a.LastName), "Id", "FirstName", filter.AuthorId);
+            filter.Publishers = new SelectList(
+                _unitofWork.Publisher.GetAll().OrderBy(p => p.Name), "Id", "Name", filter.PublisherId);
+            filter.Genres = new SelectList(
+                _unitofWork.Genre.GetAll().OrderBy(g => g.Name), "Id", "Name", filter.GenreId);
+
+            ViewBag.Filter = filter;
+
+            return View(pagedList);
+        }
+
+        [Authorize(Policy = "Books.View")]
+        public async Task<IActionResult> Details(int id)
+        {
+            var book = await _unitofWork.Book.GetBookDetailsAsync(id);
+            if (book == null) return NotFound();
+
+            var vm = new BookDetailsVM
             {
-                Books = _unitofWork.Book.GetAll(includeProperties : "Author,Publisher,BookGenres.Genre,BookIssues.Member").ToList()
+                Book = book,
+                ActiveIssues = book.BookIssues.Where(bi => !bi.isReturned).OrderByDescending(bi => bi.DateIssue).ToList(),
+                IssueHistory = book.BookIssues.Where(bi => bi.isReturned).OrderByDescending(bi => bi.ReturnDate).ToList()
             };
-            return View(VM);
+
+            return View(vm);
         }
 
         [Authorize(Policy = "Books.Create")]
-        public IActionResult Upsert (int? id)
+        public IActionResult Upsert(int? id)
         {
             BookVM vm = new();
-            if (id == null||id==0)
+            if (id == null || id == 0)
             {
                 vm.Book = new Book();
             }
@@ -50,7 +99,7 @@ namespace LibraryManagement.Controllers
                 {
                     return NotFound();
                 }
-                vm.SelectedGenreIds=vm.Book.BookGenres.Select(g => g.GenreId).ToList();
+                vm.SelectedGenreIds = vm.Book.BookGenres.Select(g => g.GenreId).ToList();
             }
             PopulateBookVM(vm);
             return View(vm);
@@ -67,7 +116,6 @@ namespace LibraryManagement.Controllers
                 return View(vm);
             }
 
-
             if (vm.Book.Id == 0)
             {
                 vm.Book.AvailableCopies = vm.Book.TotalCopies;
@@ -78,6 +126,14 @@ namespace LibraryManagement.Controllers
                     {
                         GenreId = genreId
                     });
+                }
+                if (vm.ImageFile != null)
+                {
+                    string imageUrl = FileUpload.UploadImage(
+                        vm.ImageFile,
+                        _webHostEnvironment.WebRootPath);
+
+                    vm.Book.CoverImageUrl = imageUrl;
                 }
 
                 _unitofWork.Book.Add(vm.Book);
@@ -111,10 +167,20 @@ namespace LibraryManagement.Controllers
                         GenreId = genreId
                     });
                 }
+                if (vm.ImageFile != null)
+                {
+                    FileUpload.DeleteImage(
+                        _webHostEnvironment.WebRootPath,
+                        bookFromDb.CoverImageUrl);
+
+                    bookFromDb.CoverImageUrl =
+                        FileUpload.UploadImage(
+                            vm.ImageFile,
+                            _webHostEnvironment.WebRootPath);
+                }
 
                 _unitofWork.Book.Update(bookFromDb);
             }
-
 
             _unitofWork.Save();
 
@@ -148,10 +214,14 @@ namespace LibraryManagement.Controllers
             {
                 return NotFound();
             }
+            FileUpload.DeleteImage(
+                _webHostEnvironment.WebRootPath,
+                book.CoverImageUrl);
 
+            _unitofWork.Book.Remove(book);
+            _unitofWork.Save();
 
             _unitofWork.Book.DeleteBook(id);
-
 
             return RedirectToAction(nameof(Index));
         }
