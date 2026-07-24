@@ -33,6 +33,10 @@
         public string? CoverImageUrl { get; set; }
 
         public bool IsAvailable { get; set; }
+
+        public int? SeriesId { get; set; }
+
+        public Series? Series { get; set; }
         
         public ICollection<BookGenre> BookGenres { get; set; }
             = new List<BookGenre>();

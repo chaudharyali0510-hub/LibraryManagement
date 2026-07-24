@@ -20,9 +20,9 @@ namespace LibraryManagement.Services
                 join rm in _context.RoleMenuItems on ur.RoleId equals rm.RoleId
                 join m in _context.MenuItems on rm.MenuItemId equals m.Id
                 where ur.UserId == userId && m.IsVisible
-                orderby m.SortOrder
+                
                 select m
-            ).Distinct().ToListAsync();
+            ).Distinct().OrderBy(m=>m.SortOrder).ToListAsync();
 
             return menus;
         }

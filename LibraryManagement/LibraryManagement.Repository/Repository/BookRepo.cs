@@ -81,9 +81,20 @@ namespace LibraryManagement.Repository
                 .AsNoTracking()
                 .Include(b => b.Author)
                 .Include(b => b.Publisher)
+                .Include(b => b.Series)
                 .Include(b => b.BookGenres).ThenInclude(bg => bg.Genre)
                 .Include(b => b.BookIssues).ThenInclude(bi => bi.Member)
                 .FirstOrDefaultAsync(b => b.Id == id);
+        }
+
+        public async Task<List<Book>> GetSeriesBooksAsync(int seriesId, int excludeBookId)
+        {
+            return await _db.Books
+                .AsNoTracking()
+                .Include(b => b.Author)
+                .Where(b => b.SeriesId == seriesId && b.Id != excludeBookId)
+                .OrderBy(b => b.Title)
+                .ToListAsync();
         }
     }
 }

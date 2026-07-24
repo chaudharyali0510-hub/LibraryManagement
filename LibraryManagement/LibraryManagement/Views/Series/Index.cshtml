@@ -1,0 +1,62 @@
+@inject IAuthorizationService AuthorizationService
+@model IEnumerable<Series>
+
+<div class="container">
+
+    <h2>Series</h2>
+
+    @if ((await AuthorizationService.AuthorizeAsync(User, "Series.Create")).Succeeded)
+    {
+        <a asp-action="Upsert" class="btn btn-primary">
+            Add Series
+        </a>
+    }
+
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Description</th>
+                <th></th>
+            </tr>
+        </thead>
+
+        <tbody>
+
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>
+                       @item.Name
+                    </td>
+
+                    <td>
+                       @item.Description
+                    </td>
+
+                    <td>
+                        @if ((await AuthorizationService.AuthorizeAsync(User, "Series.Edit")).Succeeded)
+                        {
+                            <a asp-action="Upsert"
+                               asp-route-id="@item.Id"
+                               class="btn btn-warning">
+                                Edit
+                            </a>
+                        }
+
+                        @if ((await AuthorizationService.AuthorizeAsync(User, "Series.Delete")).Succeeded)
+                        {
+                            <a asp-action="Delete"
+                               asp-route-id="@item.Id"
+                               class="btn btn-danger">
+                                Delete
+                            </a>
+                        }
+                    </td>
+                </tr>
+            }
+
+        </tbody>
+    </table>
+
+</div>

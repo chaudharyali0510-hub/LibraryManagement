@@ -17,6 +17,9 @@ namespace LibraryManagement.Data
         public DbSet<Genre> Genres { get; set; }
         public DbSet<Member> Members { get; set; }
         public DbSet<Publisher> Publisher { get; set; }
+
+        public DbSet<Series> Series { get; set; }
+
         public DbSet<Permission> Permissions { get; set; }
 
         public DbSet<RolePermission> RolePermissions { get; set; }
@@ -87,6 +90,12 @@ namespace LibraryManagement.Data
                 .WithMany(x => x.RoleMenuItems)
                 .HasForeignKey(x => x.MenuItemId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Entity<Book>()
+                .HasOne(b => b.Series)
+                .WithMany(s => s.Books)
+                .HasForeignKey(b => b.SeriesId)
+                .OnDelete(DeleteBehavior.SetNull);
         }
     }
 }

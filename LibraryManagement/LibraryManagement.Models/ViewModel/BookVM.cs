@@ -17,5 +17,7 @@ namespace LibraryManagement.ViewModel
 
         public List<int> SelectedGenreIds { get; set; } = new();
         public IFormFile? ImageFile { get; set; }
+        public IEnumerable<Series> SeriesList { get; set; } = new List<Series>();
+        public int? SelectedSeriesId { get; set; }
     }
 }

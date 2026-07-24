@@ -223,4 +223,120 @@
         </div>
     }
 
+    @if (book.Series != null && Model.SeriesBooks.Any())
+    {
+        <div class="card shadow-sm mt-4">
+            <div class="card-header bg-white">
+                <h5 class="mb-0"><i class="fas fa-layer-group me-2"></i>More in @book.Series.Name</h5>
+            </div>
+            <div class="card-body position-relative px-5">
+                <button class="btn btn-sm btn-outline-secondary series-arrow series-arrow-left" onclick="scrollSeries(-1)" id="seriesLeft">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+
+                <div class="series-scroll" id="seriesScroll">
+                    @foreach (var related in Model.SeriesBooks)
+                    {
+                        <a asp-action="Details" asp-route-id="@related.Id" class="text-decoration-none series-card-link">
+                            <div class="card h-100 shadow-sm series-card">
+                                @if (!string.IsNullOrEmpty(related.CoverImageUrl))
+                                {
+                                    <img src="@related.CoverImageUrl" class="card-img-top" style="height:200px; object-fit:cover;" />
+                                }
+                                else
+                                {
+                                    <img src="https://placehold.co/300x200?text=No+Cover" class="card-img-top" style="height:200px; object-fit:cover;" />
+                                }
+                                <div class="card-body p-2">
+                                    <h6 class="card-title text-dark mb-1" style="font-size:0.9rem;">@related.Title</h6>
+                                    <p class="text-muted mb-1" style="font-size:0.8rem;">@related.Author?.FirstName @related.Author?.LastName</p>
+                                    @if (related.AvailableCopies > 0)
+                                    {
+                                        <span class="badge bg-success" style="font-size:0.7rem;">Available</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-danger" style="font-size:0.7rem;">Out of Stock</span>
+                                    }
+                                </div>
+                            </div>
+                        </a>
+                    }
+                </div>
+
+                <button class="btn btn-sm btn-outline-secondary series-arrow series-arrow-right" onclick="scrollSeries(1)" id="seriesRight">
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+        </div>
+    }
+
 </div>
+
+<style>
+    .series-scroll {
+        display: flex;
+        gap: 1rem;
+        overflow-x: hidden;
+        scroll-behavior: smooth;
+        padding: 0.5rem 0;
+    }
+    .series-card-link {
+        flex: 0 0 260px;
+    }
+    .series-card {
+        width: 260px;
+        transition: transform 0.2s;
+    }
+    .series-card:hover {
+        transform: translateY(-3px);
+    }
+    .series-arrow {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        z-index: 2;
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: white;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    }
+    .series-arrow-left {
+        left: 8px;
+    }
+    .series-arrow-right {
+        right: 8px;
+    }
+    .series-arrow:disabled {
+        opacity: 0.3;
+        pointer-events: none;
+    }
+</style>
+
+@section Scripts {
+    <script>
+        function scrollSeries(direction) {
+            var container = document.getElementById('seriesScroll');
+            var scrollAmount = 280;
+            container.scrollBy({ left: direction * scrollAmount, behavior: 'smooth' });
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            var container = document.getElementById('seriesScroll');
+            var leftBtn = document.getElementById('seriesLeft');
+            var rightBtn = document.getElementById('seriesRight');
+
+            function updateArrows() {
+                leftBtn.disabled = container.scrollLeft <= 0;
+                rightBtn.disabled = container.scrollLeft + container.clientWidth >= container.scrollWidth - 5;
+            }
+
+            container.addEventListener('scroll', updateArrows);
+            updateArrows();
+        });
+    </script>
+}

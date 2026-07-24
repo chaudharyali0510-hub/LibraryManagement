@@ -26,6 +26,7 @@
             @{
                 var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
                 var menus = userId != null ? await MenuService.GetUserMenusAsync(userId) : new List<LibraryManagement.Models.Identity.MenuItem>();
+                
             }
             @foreach (var menu in menus)
             {

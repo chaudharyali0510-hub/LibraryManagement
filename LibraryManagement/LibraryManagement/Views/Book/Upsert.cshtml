@@ -93,6 +93,18 @@
     </div>
 
     <div class="mb-3">
+        <label>Series (optional)</label>
+        <select asp-for="SelectedSeriesId"
+                class="form-control select2">
+            <option value="">-- None --</option>
+            @foreach (var s in Model.SeriesList)
+            {
+                <option value="@s.Id">@s.Name</option>
+            }
+        </select>
+    </div>
+
+    <div class="mb-3">
         <label asp-for="Book.TotalCopies"></label>
         <input asp-for="Book.TotalCopies"
                class="form-control" />

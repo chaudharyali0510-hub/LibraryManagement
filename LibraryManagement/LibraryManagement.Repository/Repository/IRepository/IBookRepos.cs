@@ -9,5 +9,6 @@ namespace LibraryManagement.Repository.IRepository
         void DeleteBook(int id);
         IQueryable<Book> GetFilteredBooks(BookFilterVM filter);
         Task<Book?> GetBookDetailsAsync(int id);
+        Task<List<Book>> GetSeriesBooksAsync(int seriesId, int excludeBookId);
     }
 }

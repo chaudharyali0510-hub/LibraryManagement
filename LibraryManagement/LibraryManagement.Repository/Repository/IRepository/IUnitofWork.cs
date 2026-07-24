@@ -11,6 +11,7 @@ namespace LibraryManagement.Repository.IRepository
         IMemberRepo Member { get; }
         IPublisherRepo Publisher { get; }
         IMenuItemRepo MenuItem { get; }
+        ISeriesRepo Series { get; }
         void Save();
     }
 }

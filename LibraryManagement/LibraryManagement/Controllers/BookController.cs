@@ -28,6 +28,7 @@ namespace LibraryManagement.Controllers
             vm.AuthorList = _unitofWork.Author.GetAll();
             vm.PublisherList = _unitofWork.Publisher.GetAll();
             vm.GenreList = _unitofWork.Genre.GetAll();
+            vm.SeriesList = _unitofWork.Series.GetAll();
             return vm;
         }
 
@@ -81,6 +82,11 @@ namespace LibraryManagement.Controllers
                 IssueHistory = book.BookIssues.Where(bi => bi.isReturned).OrderByDescending(bi => bi.ReturnDate).ToList(),
             };
 
+            if (book.SeriesId.HasValue)
+            {
+                vm.SeriesBooks = await _unitofWork.Book.GetSeriesBooksAsync(book.SeriesId.Value, book.Id);
+            }
+
             return View(vm);
         }
 
@@ -100,6 +106,7 @@ namespace LibraryManagement.Controllers
                     return NotFound();
                 }
                 vm.SelectedGenreIds = vm.Book.BookGenres.Select(g => g.GenreId).ToList();
+                vm.SelectedSeriesId = vm.Book.SeriesId;
             }
             PopulateBookVM(vm);
             return View(vm);
@@ -119,6 +126,7 @@ namespace LibraryManagement.Controllers
             if (vm.Book.Id == 0)
             {
                 vm.Book.AvailableCopies = vm.Book.TotalCopies;
+                vm.Book.SeriesId = vm.SelectedSeriesId;
 
                 foreach (var genreId in vm.SelectedGenreIds)
                 {
@@ -157,6 +165,7 @@ namespace LibraryManagement.Controllers
                 bookFromDb.Language = vm.Book.Language;
                 bookFromDb.TotalCopies = vm.Book.TotalCopies;
                 bookFromDb.AvailableCopies = vm.Book.TotalCopies - previouslyIssued;
+                bookFromDb.SeriesId = vm.SelectedSeriesId;
 
                 bookFromDb.BookGenres.Clear();
 

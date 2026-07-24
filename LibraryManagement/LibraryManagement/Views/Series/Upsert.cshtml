@@ -1,0 +1,43 @@
+@model Series
+
+
+<form method="post">
+
+    @if (Model != null && Model.Id != 0)
+    {
+        <input asp-for="Id" hidden />
+
+    }
+    <div class="mb-3">
+
+        <label asp-for="Name"></label>
+
+        <input asp-for="Name"
+               class="form-control" />
+
+        <span asp-validation-for="Name"
+              class="text-danger"></span>
+
+    </div>
+
+    <div class="mb-3">
+
+        <label asp-for="Description"></label>
+
+        <textarea asp-for="Description"
+                  class="form-control" ></textarea>
+
+    </div>
+
+
+    <button type="submit" class="btn btn-success">
+        Save
+    </button>
+
+
+    <a asp-action="Index" class="btn btn-secondary">
+        Back
+    </a>
+
+
+</form>
