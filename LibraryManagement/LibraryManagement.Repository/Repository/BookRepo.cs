@@ -96,5 +96,72 @@ namespace LibraryManagement.Repository
                 .OrderBy(b => b.Title)
                 .ToListAsync();
         }
+
+        public async Task<IEnumerable<Book>> SearchBooksAsync(string query)
+        {
+            var term = query.Trim().ToLower();
+            return await _db.Books
+                .AsNoTracking()
+                .Include(b => b.Author)
+                .Include(b => b.Publisher)
+                .Include(b => b.BookGenres).ThenInclude(bg => bg.Genre)
+                .Where(b =>
+                    b.Title.ToLower().Contains(term) ||
+                    b.ISBN.ToLower().Contains(term) ||
+                    b.Author!.FirstName.ToLower().Contains(term) ||
+                    b.Author.LastName.ToLower().Contains(term) ||
+                    (b.Author.FirstName + " " + b.Author.LastName).ToLower().Contains(term) ||
+                    b.Publisher!.Name.ToLower().Contains(term) ||
+                    b.BookGenres.Any(bg => bg.Genre.Name.ToLower().Contains(term)))
+                .OrderBy(b => b.Title)
+                .ToListAsync();
+        }
+
+        public async Task<IEnumerable<Book>> GetPopularBooksAsync(int count = 10)
+        {
+            return await _db.Books
+                .AsNoTracking()
+                .Include(b => b.Author)
+                .Include(b => b.BookGenres).ThenInclude(bg => bg.Genre)
+                .OrderByDescending(b => b.BookIssues.Count)
+                .Take(count)
+                .ToListAsync();
+        }
+
+        public async Task<IEnumerable<Book>> GetOverdueBooksAsync()
+        {
+            var today = DateTime.Today;
+            return await _db.Books
+                .AsNoTracking()
+                .Include(b => b.Author)
+                .Include(b => b.BookIssues).ThenInclude(bi => bi.Member)
+                .Where(b => b.BookIssues.Any(bi => !bi.isReturned && bi.DueDate < today))
+                .ToListAsync();
+        }
+
+        public async Task<IEnumerable<Book>> GetNewArrivalsAsync(int count = 10)
+        {
+            return await _db.Books
+                .AsNoTracking()
+                .Include(b => b.Author)
+                .Include(b => b.Publisher)
+                .Include(b => b.BookGenres).ThenInclude(bg => bg.Genre)
+                .OrderByDescending(b => b.PublicationYear)
+                .ThenByDescending(b => b.Id)
+                .Take(count)
+                .ToListAsync();
+        }
+
+        public async Task<IQueryable<Book>> GetAvailableBooksQueryAsync()
+        {
+            return _db.Books
+                .AsNoTracking()
+                .Include(b => b.Author)
+                .Include(b => b.Publisher)
+                .Include(b => b.BookGenres).ThenInclude(bg => bg.Genre)
+                .Where(b => b.AvailableCopies > 0)
+                .OrderBy(b => b.Title)
+                .AsQueryable();
+        }
     }
 }

@@ -10,5 +10,10 @@ namespace LibraryManagement.Repository.IRepository
         IQueryable<Book> GetFilteredBooks(BookFilterVM filter);
         Task<Book?> GetBookDetailsAsync(int id);
         Task<List<Book>> GetSeriesBooksAsync(int seriesId, int excludeBookId);
+        Task<IEnumerable<Book>> SearchBooksAsync(string query);
+        Task<IEnumerable<Book>> GetPopularBooksAsync(int count = 10);
+        Task<IEnumerable<Book>> GetOverdueBooksAsync();
+        Task<IEnumerable<Book>> GetNewArrivalsAsync(int count = 10);
+        Task<IQueryable<Book>> GetAvailableBooksQueryAsync();
     }
 }
